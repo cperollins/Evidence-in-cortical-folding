@@ -12,7 +12,7 @@ library(lmerTest)
 library(ggpubr)
 library(tableone)
 
-# load data. Requestions should be made to the author
+# load data. Requests should be made to the author
 data <- read.csv('data/data_uk-shanghai.csv',na.strings=c("","NA")) %>% 
   mutate(pcs_length_AI = 2*(pcs_length_rh - pcs_length_lh) / (pcs_length_rh + pcs_length_lh)) %>% 
   mutate(pcs_depth_AI = 2*(pcs_depth_rh - pcs_depth_lh) / (pcs_depth_rh + pcs_depth_lh)) %>%   

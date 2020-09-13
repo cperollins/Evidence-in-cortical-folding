@@ -10,8 +10,9 @@ library(tidyverse)
 library(ggplot2)
 library(lmerTest)
 library(ggpubr)
+library(tableone)
 
-# load data. Available upon request
+# load data. Requestions should be made to the author
 data <- read.csv('data/data_uk-shanghai.csv',na.strings=c("","NA")) %>% 
   mutate(pcs_length_AI = 2*(pcs_length_rh - pcs_length_lh) / (pcs_length_rh + pcs_length_lh)) %>% 
   mutate(pcs_depth_AI = 2*(pcs_depth_rh - pcs_depth_lh) / (pcs_depth_rh + pcs_depth_lh)) %>%   
@@ -19,6 +20,7 @@ data <- read.csv('data/data_uk-shanghai.csv',na.strings=c("","NA")) %>%
   mutate(sts_depth_AI = 2*(sts_depth_rh - sts_depth_lh) / (sts_depth_rh + sts_depth_lh)) %>%   
   mutate(panss_ptotal_minusp3 = panss_ptotal - panss_p3) %>% 
   filter(quality_control == '1')
+# mutate creates asymmetry indices
 
 # linear models for paracingulate and superior temporal sulci (PCS, STS)
 # length and depth analyses by hemisphere
@@ -84,4 +86,46 @@ model7_shanghai<- lm(sts_depth_rh ~ group + age + sex + etiv,
 summary(model7_shanghai)
 plot(model7_shanghai)
 
-# figures
+# asymmetry index analyses
+anova1 <- aov(pcs_length_AI~group,data=data)
+summary(anova1)
+TukeyHSD(anova1)
+
+anova2 <- aov(pcs_depth_AI~group,data=data)
+summary(anova2)
+
+anova3 <- aov(sts_length_AI~group,data=data)
+summary(anova3)
+
+anova4 <- aov(sts_depth_AI~group,data=data)
+summary(anova4)
+
+t.test((data %>% filter(group == "H"))$pcs_length_AI, mu = 0, alternative = "two.sided")
+t.test((data %>% filter(group == "NH"))$pcs_length_AI, mu = 0, alternative = "two.sided")
+t.test((data %>% filter(group == "HC"))$pcs_length_AI, mu = 0, alternative = "two.sided")
+
+t.test((data %>% filter(group == "H"))$pcs_depth_AI, mu = 0, alternative = "two.sided")
+t.test((data %>% filter(group == "NH"))$pcs_depth_AI, mu = 0, alternative = "two.sided")
+t.test((data %>% filter(group == "HC"))$pcs_depth_AI, mu = 0, alternative = "two.sided")
+
+t.test((data %>% filter(group == "H"))$sts_length_AI, mu = 0, alternative = "two.sided")
+t.test((data %>% filter(group == "NH"))$sts_length_AI, mu = 0, alternative = "two.sided")
+t.test((data %>% filter(group == "HC"))$sts_length_AI, mu = 0, alternative = "two.sided")
+
+t.test((data %>% filter(group == "H"))$sts_depth_AI, mu = 0, alternative = "two.sided")
+t.test((data %>% filter(group == "NH"))$sts_depth_AI, mu = 0, alternative = "two.sided")
+t.test((data %>% filter(group == "HC"))$sts_depth_AI, mu = 0, alternative = "two.sided")
+
+# table 1
+# demographic and clinical characteristics 
+data$group <- as.factor(data$group)
+data$group <- relevel(data$group, ref="NH")
+data$group <- relevel(data$group, ref="H")
+data$sample <- relevel(data$sample, ref="uk")
+listVarsM <- c("sample", "sex", "age", "centre", "education_yrs", 
+               "iq", "panss_ptotal", "panss_ptotal_minusp3", "panss_ntotal", 
+               "panss_p3", "panss_p3_avg","panss_p1", "etiv", "olanzapine_equivalent")
+catVarsM <- c("sample", "sex", "group", "centre")
+tbl <- CreateTableOne(vars = listVarsM, data = data, factorVars = catVarsM, strata = c("group", "sample"),includeNA=FALSE)
+tbl
+tbl <- print(tbl)
